@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lector AR</title>
+
+  <!-- A-Frame & MindAR -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0b1e3d, #142850); /* Azul oscuro */
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    /* Pantalla de Login */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 20, 40, 0.95); /* Azul oscuro semitransparente */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    #login-box {
+      background: #1b2a4f;
+      padding: 50px 40px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    #login-box h2 {
+      margin: 0;
+      text-align: center;
+      color: #ffc107; /* Amarillo */
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    #login-box input {
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #ffffff10;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    #login-box input:focus {
+      border: 1px solid #ffc107;
+    }
+
+    #login-btn {
+      padding: 14px;
+      background: #e53935; /* Rojo */
+      border: none;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #login-btn:hover {
+      background: #ff7043; /* Rojo claro */
+    }
+
+    #error-msg {
+      color: #ffeb3b;
+      font-size: 14px;
+      display: none;
+      text-align: center;
+    }
+
+    a-scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla de Login -->
+  <div id="login-overlay">
+    <div id="login-box">
+      <h2>Bienvenido al Lector AR</h2>
+      <input type="text" id="username" placeholder="Usuario" />
+      <input type="password" id="password" placeholder="Contraseña" />
+      <button id="login-btn">Ingresar</button>
+      <p id="error-msg">Credenciales incorrectas</p>
+    </div>
+  </div>
+
+  <!-- Escena AR -->
+  <a-scene id="ar-scene" mindar-image="imageTargetSrc: targets1.mind;" color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"
+    style="visibility: hidden;">
+    <a-assets>
+      <a-asset-item id="avatarModel" src="Logo1.glb"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity mindar-image-target="targetIndex: 0; smooth: true; smoothCount: 10; smoothTolerance: 0.01; smoothThreshold: 5">
+      <a-gltf-model rotation="0 0 0" position="0 0 0" scale="350 350 350" src="#avatarModel"
+        animation="property: position; to: 0 0 0; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+      </a-gltf-model>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const VALID_USER = "admin";
+    const VALID_PASS = "";
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (username === VALID_USER && password === VALID_PASS) {
+        document.getElementById('login-overlay').style.display = 'none';
+        const scene = document.getElementById('ar-scene');
+        scene.style.visibility = 'visible';
+
+        if (scene.hasLoaded) {
+          startMindAR();
+        } else {
+          scene.addEventListener('loaded', startMindAR);
+        }
+      } else {
+        document.getElementById('error-msg').style.display = 'block';
+      }
+    });
+
+    function startMindAR() {
+      const scene = document.getElementById('ar-scene');
+      const arSystem = scene.systems['mindar-image-system'];
+      if (arSystem) arSystem.start();
+    }
+  </script>
+</body>
+</html>
